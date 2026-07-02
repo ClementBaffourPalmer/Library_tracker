@@ -45,7 +45,14 @@ In a Bash console:
 
 ```bash
 git clone <your-repo-url>
-cd Lib_Track
+cd Library_tracker
+```
+
+With your repo:
+
+```bash
+git clone https://github.com/ClementBaffourPalmer/Library_tracker.git
+cd Library_tracker
 ```
 
 ### 4. Create a virtualenv and install requirements
@@ -97,7 +104,7 @@ Edit the WSGI file PythonAnywhere creates for your domain and use this shape:
 import os
 import sys
 
-path = "/home/<your-username>/Lib_Track"
+path = "/home/<your-username>/Library_tracker"
 if path not in sys.path:
     sys.path.insert(0, path)
 
@@ -114,7 +121,7 @@ For your account, the exact path should be:
 import os
 import sys
 
-path = "/home/clementPalmer27/Lib_Track"
+path = "/home/clementPalmer27/Library_tracker"
 if path not in sys.path:
     sys.path.insert(0, path)
 
@@ -130,7 +137,7 @@ application = get_wsgi_application()
 From a Bash console:
 
 ```bash
-cd ~/Lib_Track
+cd ~/Library_tracker
 workon libtrack-venv
 python manage.py migrate
 python manage.py collectstatic --noinput
@@ -141,12 +148,12 @@ python manage.py collectstatic --noinput
 Add a static mapping:
 
 - URL: `/static/`
-- Directory: `/home/<your-username>/Lib_Track/staticfiles`
+- Directory: `/home/<your-username>/Library_tracker/staticfiles`
 
 For your account, use:
 
 - URL: `/static/`
-- Directory: `/home/clementPalmer27/Lib_Track/staticfiles`
+- Directory: `/home/clementPalmer27/Library_tracker/staticfiles`
 
 ### 10. Reload the web app
 

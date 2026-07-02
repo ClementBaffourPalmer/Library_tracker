@@ -1,7 +1,7 @@
 import os
 import sys
 
-path = "/home/clementPalmer27/Lib_Track"
+path = "/home/clementPalmer27/Library_tracker"
 if path not in sys.path:
     sys.path.insert(0, path)
 
