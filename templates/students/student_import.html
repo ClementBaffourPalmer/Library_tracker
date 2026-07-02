@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Bulk Import | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <section class="section-card">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">Bulk student import</h2>
+        <p class="section-card__subtitle">Upload CSV or XLSX files and review the validation summary before adding records.</p>
+      </div>
+      <a href="{% url 'student_sample_template' %}" class="app-button app-button--secondary">
+        <i data-lucide="download"></i><span>Sample CSV</span>
+      </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="grid gap-5 md:grid-cols-[1fr_auto]">
+      {% csrf_token %}
+      <div>
+        <label class="app-label" for="{{ form.file.id_for_label }}">Upload file</label>
+        {{ form.file }}
+        {% if form.file.errors %}
+          <div class="mt-2 text-sm text-red-600">{{ form.file.errors }}</div>
+        {% endif %}
+        <p class="mt-2 text-sm text-slate-500">{{ form.file.help_text }}</p>
+      </div>
+      <div class="flex md:items-end">
+        <button type="submit" class="app-button app-button--primary">
+          <i data-lucide="upload"></i><span>Import students</span>
+        </button>
+      </div>
+    </form>
+
+    {% if summary %}
+      <div class="section-grid mt-6">
+        <div class="metric-card span-3">
+          <div class="metric-card__label">Processed</div>
+          <div class="metric-card__value">{{ summary.total_records }}</div>
+        </div>
+        <div class="metric-card span-3">
+          <div class="metric-card__label">Imported</div>
+          <div class="metric-card__value">{{ summary.successfully_imported }}</div>
+        </div>
+        <div class="metric-card span-3">
+          <div class="metric-card__label">Duplicates</div>
+          <div class="metric-card__value">{{ summary.duplicates_skipped }}</div>
+        </div>
+        <div class="metric-card span-3">
+          <div class="metric-card__label">Invalid rows</div>
+          <div class="metric-card__value">{{ summary.invalid_rows }}</div>
+        </div>
+      </div>
+
+      <div class="section-card__header mt-6">
+        <div>
+          <h3 class="section-card__title">Failed rows</h3>
+          <p class="section-card__subtitle">Rows that were skipped during validation or duplicate checks.</p>
+        </div>
+      </div>
+
+      <div class="app-table-wrap">
+        <table class="app-table">
+          <thead>
+            <tr>
+              <th>Row</th>
+              <th>Data</th>
+              <th>Issues</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if summary.failed_rows %}
+              {% for row in summary.failed_rows %}
+                <tr>
+                  <td class="font-semibold">{{ row.row_number }}</td>
+                  <td class="text-slate-600">
+                    {{ row.raw }}
+                  </td>
+                  <td>
+                    <div class="flex flex-wrap gap-2">
+                      {% for error in row.errors %}
+                        <span class="app-badge app-badge--danger">{{ error }}</span>
+                      {% endfor %}
+                    </div>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="3">
+                  <div class="app-empty-state app-empty-state--compact">
+                    <div class="app-empty-state__icon"><i data-lucide="check-circle-2"></i></div>
+                    <div class="app-empty-state__title">No failed rows</div>
+                    <div class="app-empty-state__copy">All uploaded rows were accepted.</div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

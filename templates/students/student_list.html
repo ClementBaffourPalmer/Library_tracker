@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}Students | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <section class="section-card">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">Student management</h2>
+        <p class="section-card__subtitle">Search, add, edit, delete, and import students from one workspace.</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="{% url 'student_import' %}" class="app-button app-button--secondary"><i data-lucide="upload"></i><span>Import</span></a>
+        <a href="{% url 'student_add' %}" class="app-button app-button--primary"><i data-lucide="user-plus"></i><span>Add student</span></a>
+      </div>
+    </div>
+
+    <form method="get" class="mb-5">
+      <div class="grid gap-3 md:grid-cols-[1fr_auto]">
+        <input class="app-input" type="search" name="q" value="{{ query }}" placeholder="Search by name, index number, department, or level" />
+        <button class="app-button app-button--secondary" type="submit"><i data-lucide="search"></i><span>Search</span></button>
+      </div>
+    </form>
+
+    <div class="app-stat-grid mb-5">
+      <div class="metric-card">
+        <div class="metric-card__label">Total Students</div>
+        <div class="metric-card__value">{{ total_students }}</div>
+        <div class="metric-card__meta">Registered in the system</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card__label">Departments</div>
+        <div class="metric-card__value">{{ analytics.departments|length }}</div>
+        <div class="metric-card__meta">Distinct department groups</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card__label">Active Students</div>
+        <div class="metric-card__value">{{ analytics.top_students|length }}</div>
+        <div class="metric-card__meta">Students with attendance history</div>
+      </div>
+    </div>
+
+    <div class="app-table-wrap">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>Full name</th>
+            <th>Index number</th>
+            <th>Department</th>
+            <th>Level</th>
+            <th>Date added</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if students %}
+            {% for student in students %}
+              <tr>
+                <td class="font-semibold">{{ student.full_name }}</td>
+                <td class="text-slate-600">{{ student.index_number }}</td>
+                <td>
+                  {% if student.department %}
+                    <span class="app-badge app-badge--info">{{ student.department }}</span>
+                  {% else %}
+                    <span class="app-badge app-badge--neutral">Not set</span>
+                  {% endif %}
+                </td>
+                <td>{{ student.level|default:"-" }}</td>
+                <td class="text-slate-600">{{ student.date_added }}</td>
+                <td>
+                  <div class="flex justify-end gap-2">
+                    <a href="{% url 'student_detail' student.pk %}" class="app-button app-button--secondary"><i data-lucide="eye"></i><span>View</span></a>
+                    <a href="{% url 'student_edit' student.pk %}" class="app-button app-button--secondary"><i data-lucide="pencil"></i><span>Edit</span></a>
+                  </div>
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="6">
+                <div class="app-empty-state">
+                  <div class="app-empty-state__icon"><i data-lucide="users"></i></div>
+                  <div class="app-empty-state__title">No students found</div>
+                  <div class="app-empty-state__copy">Try a different search or add your first student.</div>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <div class="mt-5 flex items-center justify-between gap-4">
+        <div class="text-sm text-slate-600">
+          Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </div>
+        <div class="flex gap-2">
+          {% if page_obj.has_previous %}
+            <a class="app-button app-button--secondary" href="?page={{ page_obj.previous_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">Previous</a>
+          {% endif %}
+          {% if page_obj.has_next %}
+            <a class="app-button app-button--secondary" href="?page={{ page_obj.next_page_number }}{% if query %}&q={{ query|urlencode }}{% endif %}">Next</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+  </section>
+{% endblock %}

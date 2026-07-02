@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Dashboard | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <section class="section-card">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">My library dashboard</h2>
+        <p class="section-card__subtitle">Track your current status and record entry or exit in one step.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <span class="app-badge app-badge--info">Capacity {{ library_settings.capacity_limit }}</span>
+        <span class="app-badge app-badge--{% if is_inside %}success{% else %}neutral{% endif %}">
+          {% if is_inside %}Inside library{% else %}Outside library{% endif %}
+        </span>
+      </div>
+    </div>
+
+    <div class="app-stat-grid">
+      <div class="metric-card">
+        <div class="metric-card__top">
+          <div>
+            <div class="metric-card__label">Current Occupancy</div>
+            <div class="metric-card__value">{{ occupancy }}</div>
+          </div>
+          <div class="metric-card__icon"><i data-lucide="users"></i></div>
+        </div>
+        <div class="metric-card__meta">People currently in the library</div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-card__top">
+          <div>
+            <div class="metric-card__label">Your Status</div>
+            <div class="metric-card__value">{% if is_inside %}In{% else %}Out{% endif %}</div>
+          </div>
+          <div class="metric-card__icon"><i data-lucide="activity"></i></div>
+        </div>
+        <div class="metric-card__meta">Based on your most recent event</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-card span-4">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Quick actions</h3>
+          <p class="section-card__subtitle">Use these buttons from your phone to check in or out while the admin dashboard stays open on the machine.</p>
+        </div>
+      </div>
+
+      <div class="grid gap-3">
+        <form method="post" action="{% url 'record_entry' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'user_dashboard' %}" />
+          <button class="app-button app-button--primary w-full" type="submit">
+            <i data-lucide="log-in"></i><span>Record entry</span>
+          </button>
+        </form>
+        <form method="post" action="{% url 'record_exit' %}">
+          {% csrf_token %}
+          <input type="hidden" name="next" value="{% url 'user_dashboard' %}" />
+          <button class="app-button app-button--secondary w-full" type="submit">
+            <i data-lucide="log-out"></i><span>Record exit</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <div class="section-card span-8">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Recent activity</h3>
+          <p class="section-card__subtitle">Your last 25 entry and exit events.</p>
+        </div>
+      </div>
+
+      <div class="app-table-wrap">
+        <table class="app-table">
+          <thead>
+            <tr>
+              <th>Action</th>
+              <th>Timestamp</th>
+              <th>Source</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if history %}
+              {% for event in history %}
+                <tr>
+                  <td>
+                    {% if event.event_type == 'ENTRY' %}
+                      <span class="app-badge app-badge--success">Entry</span>
+                    {% else %}
+                      <span class="app-badge app-badge--danger">Exit</span>
+                    {% endif %}
+                  </td>
+                  <td class="text-slate-700">{{ event.event_time }}</td>
+                  <td class="text-slate-600">{{ event.source|title }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="3">
+                  <div class="app-empty-state app-empty-state--compact">
+                    <div class="app-empty-state__icon"><i data-lucide="clock-3"></i></div>
+                    <div class="app-empty-state__title">No activity yet</div>
+                    <div class="app-empty-state__copy">Your entry and exit history will appear here after the first action.</div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+{% endblock %}

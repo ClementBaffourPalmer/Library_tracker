@@ -1,0 +1,59 @@
+{% load static %}
+{% with current=request.resolver_match.url_name|default:'' %}
+<aside class="app-sidebar" aria-label="Primary">
+  <a href="{% url 'home' %}" class="app-brand" aria-label="SmartLibrary home">
+    <img src="{% static 'img/uew_logo.png' %}" alt="University logo" class="app-brand__logo" />
+    <span class="app-brand__text">SmartLibrary</span>
+  </a>
+
+  <div class="app-sidebar__section">
+    <p class="app-sidebar__label">Main</p>
+    <nav class="app-nav">
+      <a class="app-nav__link {% if current == 'home' or current == 'admin_dashboard' or current == 'user_dashboard' or current == 'admin_current_occupancy' or current == 'admin_entries_today' or current == 'admin_exits_today' or current == 'admin_capacity_level' %}is-active{% endif %}" href="{% url 'home' %}">
+        <i data-lucide="layout-dashboard"></i>
+        <span>Dashboard</span>
+      </a>
+      {% if is_admin %}
+        <a class="app-nav__link {% if current == 'daily_report' or current == 'weekly_report' %}is-active{% endif %}" href="{% url 'daily_report' %}">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Analytics</span>
+        </a>
+        <a class="app-nav__link {% if current == 'student_list' or current == 'student_add' or current == 'student_edit' or current == 'student_detail' or current == 'student_import' or current == 'attendance_board' %}is-active{% endif %}" href="{% url 'student_list' %}">
+          <i data-lucide="users"></i>
+          <span>Students</span>
+        </a>
+        <a class="app-nav__link {% if current == 'attendance_board' %}is-active{% endif %}" href="{% url 'attendance_board' %}">
+          <i data-lucide="scan-search"></i>
+          <span>Attendance</span>
+        </a>
+      {% endif %}
+    </nav>
+  </div>
+
+  {% if is_admin %}
+    <div class="app-sidebar__section">
+      <p class="app-sidebar__label">Management</p>
+      <nav class="app-nav">
+        <a class="app-nav__link {% if current == 'users' or current == 'add_user' %}is-active{% endif %}" href="{% url 'users' %}">
+          <i data-lucide="shield"></i>
+          <span>Users</span>
+        </a>
+        <a class="app-nav__link {% if current == 'settings' %}is-active{% endif %}" href="{% url 'settings' %}">
+          <i data-lucide="settings-2"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+    </div>
+  {% endif %}
+
+  <div class="app-sidebar__footer">
+    <div class="app-surface app-surface--soft">
+      <div class="app-surface__label">Signed in as</div>
+      <div class="app-surface__value">{{ user.get_username }}</div>
+      <div class="app-surface__meta">
+        {% if is_admin %}Admin access{% else %}Member access{% endif %}
+      </div>
+    </div>
+  </div>
+</aside>
+{% endwith %}

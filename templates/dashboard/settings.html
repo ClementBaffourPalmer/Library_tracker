@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Settings | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <div class="mb-8">
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Settings</h1>
+    <p class="text-sm sm:text-base text-gray-600">Profile details, system preferences, and notifications.</p>
+  </div>
+
+  {% if saved %}
+    <div class="sl-card border border-green-200 bg-green-50/70 px-4 py-3 rounded-2xl mb-6">
+      <div class="flex items-start gap-3">
+        <i data-lucide="check-circle-2" class="w-5 h-5 text-green-700 mt-0.5"></i>
+        <div>
+          <div class="text-sm font-semibold text-green-900">Settings saved</div>
+          <div class="text-sm text-green-800/90">Your changes have been applied.</div>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <form method="post" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    {% csrf_token %}
+
+    <!-- Left column: Profile + Notifications -->
+    <div class="lg:col-span-1 space-y-6">
+      <section class="sl-card sl-card--hover p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center">
+            <i data-lucide="user" class="w-5 h-5 text-blue-700"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-gray-900 leading-tight">Profile</h2>
+            <p class="text-sm text-gray-600">Account information.</p>
+          </div>
+        </div>
+
+        <dl class="space-y-3">
+          <div class="flex items-center justify-between gap-4">
+            <dt class="text-sm text-gray-600">Username</dt>
+            <dd class="text-sm font-semibold text-gray-900">{{ user.username }}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-4">
+            <dt class="text-sm text-gray-600">Email</dt>
+            <dd class="text-sm font-semibold text-gray-900">{{ user.email|default:"—" }}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-4">
+            <dt class="text-sm text-gray-600">Role</dt>
+            <dd class="text-sm font-semibold text-gray-900">
+              {% if is_admin %}Admin{% else %}User{% endif %}
+            </dd>
+          </div>
+        </dl>
+      </section>
+
+      <section class="sl-card sl-card--hover p-6">
+        <div class="flex items-center gap-3 mb-4">
+          <div class="w-10 h-10 rounded-2xl bg-indigo-50 flex items-center justify-center">
+            <i data-lucide="bell" class="w-5 h-5 text-indigo-700"></i>
+          </div>
+          <div>
+            <h2 class="text-lg font-bold text-gray-900 leading-tight">Notifications</h2>
+            <p class="text-sm text-gray-600">Quiet, helpful alerts.</p>
+          </div>
+        </div>
+
+        <div class="space-y-4">
+          <label class="flex items-start justify-between gap-4">
+            <span>
+              <span class="block text-sm font-semibold text-gray-900">Capacity alerts</span>
+              <span class="block text-sm text-gray-600">Warn when occupancy nears capacity.</span>
+            </span>
+            <input type="checkbox" name="notify_capacity" class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-200" {% if notify_capacity %}checked{% endif %} />
+          </label>
+
+          <label class="flex items-start justify-between gap-4">
+            <span>
+              <span class="block text-sm font-semibold text-gray-900">Weekly digest</span>
+              <span class="block text-sm text-gray-600">Summary of trends and activity.</span>
+            </span>
+            <input type="checkbox" name="notify_weekly_digest" class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-200" {% if notify_weekly_digest %}checked{% endif %} />
+          </label>
+
+          <label class="flex items-start justify-between gap-4">
+            <span>
+              <span class="block text-sm font-semibold text-gray-900">Security notices</span>
+              <span class="block text-sm text-gray-600">Login and admin access updates.</span>
+            </span>
+            <input type="checkbox" name="notify_security" class="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-200" {% if notify_security %}checked{% endif %} />
+          </label>
+        </div>
+      </section>
+    </div>
+
+    <!-- Right: System preferences -->
+    <div class="lg:col-span-2">
+      <section class="sl-card sl-card--hover p-6">
+        <div class="flex items-center justify-between gap-4 mb-6">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-emerald-50 flex items-center justify-center">
+              <i data-lucide="settings" class="w-5 h-5 text-emerald-700"></i>
+            </div>
+            <div>
+              <h2 class="text-lg font-bold text-gray-900 leading-tight">System Preferences</h2>
+              <p class="text-sm text-gray-600">Library configuration and thresholds.</p>
+            </div>
+          </div>
+          {% if not is_admin %}
+            <span class="text-xs font-semibold text-gray-600 bg-gray-100 px-3 py-1 rounded-full">Read-only</span>
+          {% endif %}
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+          <div>
+            <label class="sl-label" for="library_name">Library name</label>
+            <input
+              id="library_name"
+              name="library_name"
+              class="sl-input"
+              value="{{ library_settings.library_name }}"
+              {% if not is_admin %}disabled{% endif %}
+            />
+          </div>
+
+          <div>
+            <label class="sl-label" for="capacity_limit">Capacity limit</label>
+            <input
+              id="capacity_limit"
+              name="capacity_limit"
+              type="number"
+              min="1"
+              class="sl-input"
+              value="{{ library_settings.capacity_limit }}"
+              {% if not is_admin %}disabled{% endif %}
+            />
+          </div>
+
+          <div>
+            <label class="sl-label" for="warning_threshold_percent">Warning threshold (%)</label>
+            <input
+              id="warning_threshold_percent"
+              name="warning_threshold_percent"
+              type="number"
+              min="1"
+              max="100"
+              class="sl-input"
+              value="{{ library_settings.warning_threshold_percent }}"
+              {% if not is_admin %}disabled{% endif %}
+            />
+            <p class="mt-2 text-sm text-gray-600">
+              The dashboard will flag “warning” status when occupancy reaches this percentage.
+            </p>
+          </div>
+        </div>
+
+        <div class="mt-8 flex items-center justify-end gap-6">
+          <a href="{% url 'home' %}" class="sl-btn sl-btn--outline">Cancel</a>
+          <button type="submit" class="sl-btn sl-btn--primary">
+            Save changes
+          </button>
+        </div>
+      </section>
+    </div>
+  </form>
+{% endblock %}
+

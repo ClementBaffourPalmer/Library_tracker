@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Student | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <section class="section-card max-w-2xl">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">Delete student</h2>
+        <p class="section-card__subtitle">This action removes the student record and all linked attendance records.</p>
+      </div>
+    </div>
+
+    <div class="app-empty-state app-empty-state--compact">
+      <div class="app-empty-state__icon"><i data-lucide="trash-2"></i></div>
+      <div class="app-empty-state__title">{{ student.full_name }}</div>
+      <div class="app-empty-state__copy">{{ student.index_number }}</div>
+    </div>
+
+    <form method="post" class="mt-4 flex justify-end gap-3">
+      {% csrf_token %}
+      <a href="{% url 'student_detail' student.pk %}" class="app-button app-button--secondary">Cancel</a>
+      <button type="submit" class="app-button app-button--danger">
+        <i data-lucide="trash-2"></i><span>Delete student</span>
+      </button>
+    </form>
+  </section>
+{% endblock %}

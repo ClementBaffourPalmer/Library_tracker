@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ mode }} Student | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <section class="section-card max-w-3xl">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">{{ mode }} student</h2>
+        <p class="section-card__subtitle">Capture core student profile details for attendance and analytics.</p>
+      </div>
+      {% if student %}
+        <a href="{% url 'student_detail' student.pk %}" class="app-button app-button--secondary"><i data-lucide="arrow-left"></i><span>Back</span></a>
+      {% else %}
+        <a href="{% url 'student_list' %}" class="app-button app-button--secondary"><i data-lucide="arrow-left"></i><span>Back</span></a>
+      {% endif %}
+    </div>
+
+    <form method="post" class="grid gap-5 md:grid-cols-2">
+      {% csrf_token %}
+      <div class="md:col-span-2">
+        <label class="app-label" for="{{ form.full_name.id_for_label }}">Full name</label>
+        {{ form.full_name }}
+        {{ form.full_name.errors }}
+      </div>
+      <div>
+        <label class="app-label" for="{{ form.index_number.id_for_label }}">Index number</label>
+        {{ form.index_number }}
+        {{ form.index_number.errors }}
+      </div>
+      <div>
+        <label class="app-label" for="{{ form.department.id_for_label }}">Department</label>
+        {{ form.department }}
+        {{ form.department.errors }}
+      </div>
+      <div>
+        <label class="app-label" for="{{ form.level.id_for_label }}">Level</label>
+        {{ form.level }}
+        {{ form.level.errors }}
+      </div>
+
+      <div class="md:col-span-2 flex justify-end gap-3">
+        <a href="{% url 'student_list' %}" class="app-button app-button--secondary">Cancel</a>
+        <button type="submit" class="app-button app-button--primary">
+          <i data-lucide="save"></i>
+          <span>Save student</span>
+        </button>
+      </div>
+    </form>
+  </section>
+{% endblock %}

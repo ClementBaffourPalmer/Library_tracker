@@ -1,0 +1,178 @@
+{% extends 'base.html' %}
+
+{% block title %}Attendance | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <section class="section-card">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">Student attendance board</h2>
+        <p class="section-card__subtitle">Search a student, record entry or exit, and monitor current occupancy in real time.</p>
+      </div>
+      <div class="flex gap-3">
+        <span class="app-badge app-badge--info">Occupancy {{ snapshot.occupancy }}</span>
+        <span class="app-badge app-badge--success">Entries {{ snapshot.entries_today }}</span>
+        <span class="app-badge app-badge--danger">Exits {{ snapshot.exits_today }}</span>
+      </div>
+    </div>
+
+    <form method="get" class="mb-5">
+      <div class="grid gap-3 md:grid-cols-[1fr_auto]">
+        <input class="app-input" type="search" name="q" value="{{ query }}" placeholder="Search student by name, index number, department, or level" />
+        <button class="app-button app-button--secondary" type="submit"><i data-lucide="search"></i><span>Search</span></button>
+      </div>
+    </form>
+
+    <div class="section-grid">
+      <div class="section-card span-6">
+        <div class="section-card__header">
+          <div>
+            <h3 class="section-card__title">Live student list</h3>
+            <p class="section-card__subtitle">Use the entry and exit actions to capture attendance.</p>
+          </div>
+        </div>
+
+        <div class="app-table-wrap">
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Status</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if students %}
+                {% for student in students %}
+                  <tr>
+                    <td>
+                      <div class="font-semibold">{{ student.full_name }}</div>
+                      <div class="text-sm text-slate-500">{{ student.index_number }}</div>
+                    </td>
+                    <td>
+                      <span class="app-badge app-badge--neutral">
+                        {% if student in snapshot.students_inside %}
+                          Inside
+                        {% else %}
+                          Outside
+                        {% endif %}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="flex justify-end gap-2">
+                        <form method="post" action="{% url 'student_attendance_action' student.pk 'ENTRY' %}">
+                          {% csrf_token %}
+                          <button class="app-button app-button--primary" type="submit"><i data-lucide="log-in"></i><span>Entry</span></button>
+                        </form>
+                        <form method="post" action="{% url 'student_attendance_action' student.pk 'EXIT' %}">
+                          {% csrf_token %}
+                          <button class="app-button app-button--secondary" type="submit"><i data-lucide="log-out"></i><span>Exit</span></button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3">
+                    <div class="app-empty-state app-empty-state--compact">
+                      <div class="app-empty-state__icon"><i data-lucide="scan-search"></i></div>
+                      <div class="app-empty-state__title">No students matched the search</div>
+                      <div class="app-empty-state__copy">Try another search term or add more students.</div>
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section-card span-6">
+        <div class="section-card__header">
+          <div>
+            <h3 class="section-card__title">Current library status</h3>
+            <p class="section-card__subtitle">Students currently inside the library.</p>
+          </div>
+        </div>
+
+        <div class="app-table-wrap mb-5">
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Index</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if snapshot.students_inside %}
+                {% for student in snapshot.students_inside %}
+                  <tr>
+                    <td class="font-semibold">{{ student.full_name }}</td>
+                    <td class="text-slate-600">{{ student.index_number }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="2">
+                    <div class="app-empty-state app-empty-state--compact">
+                      <div class="app-empty-state__icon"><i data-lucide="door-closed"></i></div>
+                      <div class="app-empty-state__title">No students inside</div>
+                      <div class="app-empty-state__copy">The occupancy list will populate after the first entry.</div>
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="section-card__header">
+          <div>
+            <h3 class="section-card__title">Recent attendance</h3>
+            <p class="section-card__subtitle">Latest entry and exit events.</p>
+          </div>
+        </div>
+
+        <div class="app-table-wrap">
+          <table class="app-table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Action</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% if recent_history %}
+                {% for record in recent_history %}
+                  <tr>
+                    <td class="font-semibold">{{ record.student.full_name }}</td>
+                    <td>
+                      {% if record.action == 'ENTRY' %}
+                        <span class="app-badge app-badge--success">Entry</span>
+                      {% else %}
+                        <span class="app-badge app-badge--danger">Exit</span>
+                      {% endif %}
+                    </td>
+                    <td class="text-slate-600">{{ record.timestamp }}</td>
+                  </tr>
+                {% endfor %}
+              {% else %}
+                <tr>
+                  <td colspan="3">
+                    <div class="app-empty-state app-empty-state--compact">
+                      <div class="app-empty-state__icon"><i data-lucide="history"></i></div>
+                      <div class="app-empty-state__title">No attendance history yet</div>
+                      <div class="app-empty-state__copy">Entries and exits will appear here as they are recorded.</div>
+                    </div>
+                  </td>
+                </tr>
+              {% endif %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}

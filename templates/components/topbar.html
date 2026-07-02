@@ -1,0 +1,102 @@
+{% load static %}
+{% with current=request.resolver_match.url_name|default:'' %}
+<header class="app-topbar">
+  <div class="app-topbar__left">
+    <button id="mobile-menu-button" class="app-icon-button app-icon-button--ghost md:hidden" aria-controls="mobile-menu" aria-expanded="false">
+      <i data-lucide="menu"></i>
+    </button>
+    <div>
+      <p class="app-eyebrow">Smart Library Tracker</p>
+      <h1 class="app-topbar__title">{{ page_title|default:"Dashboard" }}</h1>
+    </div>
+  </div>
+
+  <div class="app-topbar__actions">
+    {% if user.is_authenticated %}
+      <div class="app-notification">
+        <button id="notif-button" class="app-icon-button" aria-label="Notifications" aria-haspopup="dialog" aria-expanded="false">
+          <i data-lucide="bell"></i>
+          {% if nav_notification_count %}
+            <span class="app-notification__badge">{{ nav_notification_count }}</span>
+          {% endif %}
+        </button>
+
+        <div id="notif-panel" class="app-dropdown" role="dialog" aria-label="Notifications">
+          <div class="app-dropdown__header">
+            <div>
+              <div class="app-dropdown__title">Notifications</div>
+              <div class="app-dropdown__subtitle">Live occupancy and activity updates.</div>
+            </div>
+            <button id="notif-close" class="app-icon-button app-icon-button--ghost" aria-label="Close notifications">
+              <i data-lucide="x"></i>
+            </button>
+          </div>
+          <div class="app-dropdown__body">
+            {% if nav_notifications %}
+              {% for n in nav_notifications %}
+                <div class="app-notification-row">
+                  <div class="app-notification-row__icon app-notification-row__icon--{{ n.type }}">
+                    <i data-lucide="{{ n.icon|default:'bell' }}"></i>
+                  </div>
+                  <div class="app-notification-row__content">
+                    <div class="app-notification-row__meta">
+                      <span>{{ n.title }}</span>
+                      <span>{{ n.time }}</span>
+                    </div>
+                    <p>{{ n.message }}</p>
+                  </div>
+                </div>
+              {% endfor %}
+            {% else %}
+              <div class="app-empty-state app-empty-state--compact">
+                <div class="app-empty-state__icon">
+                  <i data-lucide="inbox"></i>
+                </div>
+                <div class="app-empty-state__title">No notifications</div>
+                <div class="app-empty-state__copy">Everything looks stable right now.</div>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+      <form method="post" action="{% url 'logout' %}">
+        {% csrf_token %}
+        <button type="submit" class="app-button app-button--secondary">
+          <i data-lucide="log-out"></i>
+          <span>Log out</span>
+        </button>
+      </form>
+    {% else %}
+      <a href="{% url 'login' %}" class="app-button app-button--primary">
+        <i data-lucide="log-in"></i>
+        <span>Sign in</span>
+      </a>
+    {% endif %}
+  </div>
+</header>
+
+{% if user.is_authenticated %}
+  <div id="mobile-menu" class="mobile-menu md:hidden">
+    <div class="mobile-menu__panel">
+      <a class="app-nav__link {% if current == 'home' or current == 'admin_dashboard' or current == 'user_dashboard' %}is-active{% endif %}" href="{% url 'home' %}">
+        <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+      </a>
+      {% if is_admin %}
+        <a class="app-nav__link {% if current == 'daily_report' or current == 'weekly_report' %}is-active{% endif %}" href="{% url 'daily_report' %}">
+          <i data-lucide="bar-chart-3"></i><span>Analytics</span>
+        </a>
+        <a class="app-nav__link {% if current == 'student_list' or current == 'student_add' or current == 'student_edit' or current == 'student_detail' or current == 'student_import' or current == 'attendance_board' %}is-active{% endif %}" href="{% url 'student_list' %}">
+          <i data-lucide="users"></i><span>Students</span>
+        </a>
+        <a class="app-nav__link {% if current == 'users' or current == 'add_user' %}is-active{% endif %}" href="{% url 'users' %}">
+          <i data-lucide="shield"></i><span>Users</span>
+        </a>
+        <a class="app-nav__link {% if current == 'settings' %}is-active{% endif %}" href="{% url 'settings' %}">
+          <i data-lucide="settings-2"></i><span>Settings</span>
+        </a>
+      {% endif %}
+    </div>
+  </div>
+{% endif %}
+{% endwith %}

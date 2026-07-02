@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ student.full_name }} | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <section class="section-card">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">{{ student.full_name }}</h2>
+        <p class="section-card__subtitle">{{ student.index_number }}{% if student.department %} · {{ student.department }}{% endif %}{% if student.level %} · Level {{ student.level }}{% endif %}</p>
+      </div>
+      <div class="flex gap-3">
+        <a href="{% url 'student_edit' student.pk %}" class="app-button app-button--secondary"><i data-lucide="pencil"></i><span>Edit</span></a>
+        <a href="{% url 'student_delete' student.pk %}" class="app-button app-button--secondary"><i data-lucide="trash-2"></i><span>Delete</span></a>
+      </div>
+    </div>
+
+    <div class="app-stat-grid mb-5">
+      <div class="metric-card">
+        <div class="metric-card__label">Status</div>
+        <div class="metric-card__value">{% if current_inside %}In{% else %}Out{% endif %}</div>
+        <div class="metric-card__meta">
+          <span class="app-badge app-badge--{% if current_inside %}success{% else %}neutral{% endif %}">
+            {% if current_inside %}Currently inside{% else %}Currently outside{% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card__label">Department</div>
+        <div class="metric-card__value">{{ student.department|default:"-" }}</div>
+        <div class="metric-card__meta">Optional profile field</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-card__label">Level</div>
+        <div class="metric-card__value">{{ student.level|default:"-" }}</div>
+        <div class="metric-card__meta">Optional profile field</div>
+      </div>
+    </div>
+
+    <div class="section-card__header mt-6">
+      <div>
+        <h3 class="section-card__title">Attendance history</h3>
+        <p class="section-card__subtitle">Latest student entry and exit records.</p>
+      </div>
+    </div>
+
+    <div class="app-table-wrap">
+      <table class="app-table">
+        <thead>
+          <tr>
+            <th>Action</th>
+            <th>Timestamp</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if history %}
+            {% for record in history %}
+              <tr>
+                <td>
+                  {% if record.action == 'ENTRY' %}
+                    <span class="app-badge app-badge--success">Entry</span>
+                  {% else %}
+                    <span class="app-badge app-badge--danger">Exit</span>
+                  {% endif %}
+                </td>
+                <td class="text-slate-600">{{ record.timestamp }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="2">
+                <div class="app-empty-state app-empty-state--compact">
+                  <div class="app-empty-state__icon"><i data-lucide="history"></i></div>
+                  <div class="app-empty-state__title">No attendance records yet</div>
+                  <div class="app-empty-state__copy">Attendance history will appear after the first entry or exit.</div>
+                </div>
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </section>
+{% endblock %}

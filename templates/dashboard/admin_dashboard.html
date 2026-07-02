@@ -1,0 +1,232 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Dashboard | SmartLibrary Tracker{% endblock %}
+
+{% block head %}
+  <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+  <section class="section-card">
+    <div class="section-card__header">
+      <div>
+        <h2 class="section-card__title">Library command center</h2>
+        <p class="section-card__subtitle">
+          Monitor live occupancy, student activity, and library usage trends from one operational view.
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <a href="{% url 'student_add' %}" class="app-button app-button--secondary">
+          <i data-lucide="user-plus"></i><span>Add student</span>
+        </a>
+        <a href="{% url 'student_import' %}" class="app-button app-button--primary">
+          <i data-lucide="upload"></i><span>Bulk import</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="app-stat-grid">
+      <a href="{% url 'admin_current_occupancy' %}" class="metric-card app-card--hover">
+        <div class="metric-card__top">
+          <div>
+            <div class="metric-card__label">Current Occupancy</div>
+            <div class="metric-card__value">{{ occupancy }}</div>
+          </div>
+          <div class="metric-card__icon"><i data-lucide="users"></i></div>
+        </div>
+        <div class="metric-card__meta">
+          <span class="app-badge app-badge--{% if occupancy_status == 'full' %}danger{% elif occupancy_status == 'warning' %}warning{% else %}success{% endif %}">
+            {{ occupancy_status|title }}
+          </span>
+          <span>Live library presence</span>
+        </div>
+      </a>
+
+      <a href="{% url 'admin_capacity_level' %}" class="metric-card app-card--hover">
+        <div class="metric-card__top">
+          <div>
+            <div class="metric-card__label">Library Capacity</div>
+            <div class="metric-card__value">{{ library_settings.capacity_limit }}</div>
+          </div>
+          <div class="metric-card__icon"><i data-lucide="building-2"></i></div>
+        </div>
+        <div class="metric-card__meta">
+          <span class="app-badge app-badge--info">{{ library_settings.warning_threshold_percent }}% alert threshold</span>
+        </div>
+      </a>
+
+      <a href="{% url 'admin_entries_today' %}" class="metric-card app-card--hover">
+        <div class="metric-card__top">
+          <div>
+            <div class="metric-card__label">Today's Entries</div>
+            <div class="metric-card__value">{{ entries_today }}</div>
+          </div>
+          <div class="metric-card__icon"><i data-lucide="log-in"></i></div>
+        </div>
+        <div class="metric-card__meta">
+          <span class="app-badge app-badge--success">Positive flow</span>
+        </div>
+      </a>
+
+      <a href="{% url 'admin_exits_today' %}" class="metric-card app-card--hover">
+        <div class="metric-card__top">
+          <div>
+            <div class="metric-card__label">Today's Exits</div>
+            <div class="metric-card__value">{{ exits_today }}</div>
+          </div>
+          <div class="metric-card__icon"><i data-lucide="log-out"></i></div>
+        </div>
+        <div class="metric-card__meta">
+          <span class="app-badge app-badge--neutral">Tracked departures</span>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="section-grid">
+    <div class="section-card span-8">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Occupancy trends</h3>
+          <p class="section-card__subtitle">Net occupancy movement across the last seven days.</p>
+        </div>
+      </div>
+      <div class="app-chart">
+        <canvas id="occupancyTrendChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-card span-4">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Weekly usage</h3>
+          <p class="section-card__subtitle">Entry and exit composition for the last week.</p>
+        </div>
+      </div>
+      <div class="app-chart">
+        <canvas id="weeklyUsageChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-card span-6">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Daily visits</h3>
+          <p class="section-card__subtitle">Total traffic volume by day.</p>
+        </div>
+      </div>
+      <div class="app-chart">
+        <canvas id="dailyVisitsChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-card span-6">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Department statistics</h3>
+          <p class="section-card__subtitle">Student distribution across departments.</p>
+        </div>
+      </div>
+      <div class="app-chart">
+        <canvas id="departmentStatsChart"></canvas>
+      </div>
+    </div>
+
+    <div class="section-card span-6">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Most active students</h3>
+          <p class="section-card__subtitle">Students with the highest attendance activity.</p>
+        </div>
+      </div>
+
+      <div class="app-table-wrap">
+        <table class="app-table">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Index</th>
+              <th class="text-right">Visits</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if top_students %}
+              {% for student in top_students %}
+                <tr>
+                  <td>
+                    <div class="font-semibold">{{ student.student__full_name }}</div>
+                    <div class="text-sm text-slate-500">{{ student.student__department|default:"No department" }}</div>
+                  </td>
+                  <td class="text-sm text-slate-600">{{ student.student__index_number }}</td>
+                  <td class="text-right font-semibold">{{ student.total }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="3">
+                  <div class="app-empty-state app-empty-state--compact">
+                    <div class="app-empty-state__icon"><i data-lucide="activity"></i></div>
+                    <div class="app-empty-state__title">No attendance history yet</div>
+                    <div class="app-empty-state__copy">Attendance activity will appear here after students start checking in.</div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-card span-6">
+      <div class="section-card__header">
+        <div>
+          <h3 class="section-card__title">Current occupants</h3>
+          <p class="section-card__subtitle">Users currently inside the library.</p>
+        </div>
+      </div>
+
+      <div class="app-table-wrap">
+        <table class="app-table">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% if users_inside %}
+              {% for user in users_inside %}
+                <tr>
+                  <td class="font-semibold">{{ user.username }}</td>
+                  <td class="text-slate-600">{{ user.email }}</td>
+                </tr>
+              {% endfor %}
+            {% else %}
+              <tr>
+                <td colspan="2">
+                  <div class="app-empty-state app-empty-state--compact">
+                    <div class="app-empty-state__icon"><i data-lucide="door-open"></i></div>
+                    <div class="app-empty-state__title">No users currently inside</div>
+                    <div class="app-empty-state__copy">Occupancy updates will show up as soon as entries are recorded.</div>
+                  </div>
+                </td>
+              </tr>
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <script id="dashboard-data" type="application/json">{{ dashboard_payload_json|safe }}</script>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/dashboard.js' %}"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      window.setTimeout(() => window.location.reload(), 30000);
+    });
+  </script>
+{% endblock %}

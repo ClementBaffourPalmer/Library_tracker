@@ -1,0 +1,118 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Login | SmartLibrary Tracker</title>
+    <link rel="stylesheet" href="{% static 'vendor/fonts/inter/latin.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}" />
+    <script src="{% static 'vendor/lucide/lucide.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+  </head>
+  <body class="app-body">
+    <main class="auth-shell">
+      <section class="auth-card">
+        <div class="auth-brand">
+          <img src="{% static 'img/uew_logo.png' %}" alt="University logo" class="auth-brand__logo" />
+          <div>
+            <p class="app-eyebrow" style="text-align:center;">SmartLibrary Tracker</p>
+            <h1 class="auth-brand__title">Welcome back</h1>
+            <p class="auth-brand__subtitle">Sign in to manage occupancy, students, and attendance.</p>
+          </div>
+        </div>
+
+        <form method="post" class="auth-form" id="login-form" novalidate>
+          {% csrf_token %}
+          {% if next %}
+            <input type="hidden" name="next" value="{{ next }}" />
+          {% endif %}
+
+          {% if form.non_field_errors %}
+            <div class="app-alert app-alert--error">
+              <div class="app-alert__icon"><i data-lucide="alert-circle"></i></div>
+              <div class="app-alert__content">{{ form.non_field_errors }}</div>
+            </div>
+          {% endif %}
+
+          <div class="auth-field">
+            <label for="{{ form.username.id_for_label }}" class="auth-field__label">Username or Student ID</label>
+            <div class="auth-field__input">
+              <input
+                type="text"
+                name="{{ form.username.name }}"
+                id="{{ form.username.id_for_label }}"
+                class="app-input"
+                placeholder="Enter your username or student ID"
+                autocomplete="username"
+                value="{{ form.username.value|default:'' }}"
+                required
+              />
+            </div>
+            {% if form.username.errors %}
+              <div class="auth-field__hint text-red-600">{{ form.username.errors.0 }}</div>
+            {% else %}
+              <div class="auth-field__hint">Use the account assigned by your department or administrator.</div>
+            {% endif %}
+          </div>
+
+          <div class="auth-field">
+            <label for="{{ form.password.id_for_label }}" class="auth-field__label">Password</label>
+            <div class="auth-field__input">
+              <input
+                type="password"
+                name="{{ form.password.name }}"
+                id="{{ form.password.id_for_label }}"
+                class="app-input pr-12"
+                placeholder="Enter your password"
+                autocomplete="current-password"
+                required
+              />
+              <button type="button" class="password-toggle" id="password-toggle" aria-label="Toggle password visibility">
+                <i data-lucide="eye" class="w-5 h-5" id="password-icon"></i>
+              </button>
+            </div>
+            {% if form.password.errors %}
+              <div class="auth-field__hint text-red-600">{{ form.password.errors.0 }}</div>
+            {% endif %}
+          </div>
+
+          <div class="auth-meta">
+            <a href="{% url 'password_reset' %}" class="auth-link">Forgot password?</a>
+            <span class="auth-field__hint">Secure access only</span>
+          </div>
+
+          <button type="submit" class="app-button app-button--primary auth-submit">
+            <i data-lucide="log-in"></i>
+            <span>Sign in</span>
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          Need an account? <a href="{% url 'signup' %}" class="auth-link">Create one</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+        const passwordInput = document.getElementById("{{ form.password.id_for_label }}");
+        const passwordToggle = document.getElementById("password-toggle");
+        const passwordIcon = document.getElementById("password-icon");
+
+        if (passwordInput && passwordToggle && passwordIcon) {
+          passwordToggle.addEventListener("click", () => {
+            const isHidden = passwordInput.type === "password";
+            passwordInput.type = isHidden ? "text" : "password";
+            passwordIcon.setAttribute("data-lucide", isHidden ? "eye-off" : "eye");
+            lucide.createIcons();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

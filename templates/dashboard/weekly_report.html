@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Weekly Report | SmartLibrary Tracker{% endblock %}
+
+{% block head %}
+  <script src="{% static 'vendor/chartjs/chart.umd.min.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+  <div class="mb-8">
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Analytics</h1>
+    <p class="text-sm sm:text-base text-gray-600">Daily and weekly attendance insights for the smart library.</p>
+  </div>
+
+  <!-- Analytics tabs -->
+  <div class="mb-6 overflow-x-auto">
+    <div class="flex gap-2 border-b border-gray-200 pb-1 min-w-max">
+      <a href="{% url 'daily_report' %}" class="px-4 py-2 text-sm font-semibold text-gray-600 hover:text-gray-900 transition-colors border-b-2 border-transparent whitespace-nowrap">
+        Daily
+      </a>
+      <a href="{% url 'weekly_report' %}" class="px-4 py-2 text-sm font-semibold text-gray-900 border-b-2 border-accent transition-colors whitespace-nowrap">
+        Weekly
+      </a>
+    </div>
+  </div>
+
+  <section class="sl-card p-6">
+    <div class="mb-4">
+      <h2 class="text-lg font-bold text-gray-900 mb-1">7-Day Trend</h2>
+      <p class="text-sm text-gray-600">Entries in green, exits in red.</p>
+    </div>
+
+    <div class="h-64 sm:h-72 lg:h-80">
+      <canvas id="weeklyChart"></canvas>
+    </div>
+
+    <script id="dashboard-data" type="application/json">
+      {
+        "labels": {{ chart_labels_json|safe }},
+        "entries": {{ chart_entries_json|safe }},
+        "exits": {{ chart_exits_json|safe }}
+      }
+    </script>
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  <script src="{% static 'js/weekly_report.js' %}"></script>
+{% endblock %}

@@ -1,0 +1,103 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}SmartLibrary Tracker{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'vendor/fonts/inter/latin.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}" />
+    <script src="{% static 'vendor/lucide/lucide.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'css/app.css' %}" />
+    {% block head %}{% endblock %}
+  </head>
+  <body class="app-body">
+    <div class="app-background" aria-hidden="true"></div>
+
+    <div class="app-shell {% if not user.is_authenticated %}app-shell--public{% endif %}">
+      {% if user.is_authenticated %}
+        {% include 'components/sidebar.html' %}
+      {% endif %}
+      <div class="app-shell__frame {% if not user.is_authenticated %}app-shell__frame--public{% endif %}">
+        {% include 'components/topbar.html' %}
+        <main class="app-main">
+          <div class="app-container {% if not user.is_authenticated %}app-container--public{% endif %}">
+            {% include 'components/messages.html' %}
+            {% block content %}{% endblock %}
+          </div>
+        </main>
+      </div>
+    </div>
+
+    {% block scripts %}{% endblock %}
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+        const mobileMenuButton = document.getElementById("mobile-menu-button");
+        const mobileMenu = document.getElementById("mobile-menu");
+        if (mobileMenuButton && mobileMenu) {
+          mobileMenuButton.addEventListener("click", () => {
+            mobileMenu.classList.toggle("is-open");
+            mobileMenuButton.setAttribute(
+              "aria-expanded",
+              mobileMenu.classList.contains("is-open") ? "true" : "false"
+            );
+          });
+        }
+
+        const notifButton = document.getElementById("notif-button");
+        const notifPanel = document.getElementById("notif-panel");
+        const notifClose = document.getElementById("notif-close");
+
+        const closeNotif = () => {
+          if (!notifPanel || !notifButton) {
+            return;
+          }
+          notifPanel.classList.remove("is-open");
+          notifButton.setAttribute("aria-expanded", "false");
+        };
+
+        const openNotif = () => {
+          if (!notifPanel || !notifButton) {
+            return;
+          }
+          notifPanel.classList.add("is-open");
+          notifButton.setAttribute("aria-expanded", "true");
+        };
+
+        if (notifButton && notifPanel) {
+          notifButton.addEventListener("click", (event) => {
+            event.preventDefault();
+            if (notifPanel.classList.contains("is-open")) {
+              closeNotif();
+            } else {
+              openNotif();
+            }
+          });
+          document.addEventListener("click", (event) => {
+            if (notifPanel.classList.contains("is-open") && event.target instanceof Element) {
+              if (!notifPanel.contains(event.target) && !notifButton.contains(event.target)) {
+                closeNotif();
+              }
+            }
+          });
+          document.addEventListener("keydown", (event) => {
+            if (event.key === "Escape") {
+              closeNotif();
+            }
+          });
+        }
+
+        if (notifClose) {
+          notifClose.addEventListener("click", (event) => {
+            event.preventDefault();
+            closeNotif();
+          });
+        }
+      });
+    </script>
+  </body>
+</html>

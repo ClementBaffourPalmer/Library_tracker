@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Today’s Exits | SmartLibrary Tracker{% endblock %}
+
+{% block content %}
+  <div class="mb-8">
+    <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Today’s Exits</h1>
+    <p class="text-sm sm:text-base text-gray-600">All exit events recorded for {{ date|date:"M d, Y" }}.</p>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="sl-card sl-card--hover p-6">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 rounded-2xl bg-red-50 flex items-center justify-center">
+          <i data-lucide="arrow-down-right" class="w-5 h-5 text-red-700"></i>
+        </div>
+        <div class="text-sm font-semibold text-gray-600 uppercase tracking-wide">Total exits</div>
+      </div>
+      <div class="text-4xl font-bold text-gray-900">{{ total }}</div>
+      <div class="mt-2 text-sm text-gray-600">Recorded today</div>
+    </div>
+    <div class="sl-card p-6 md:col-span-2">
+      <div class="text-sm text-gray-600">
+        Tip: compare exits vs entries in Analytics to spot peak turnover times.
+      </div>
+    </div>
+  </div>
+
+  <div class="sl-card p-6 mb-8">
+    <div class="mb-4">
+      <h2 class="text-lg font-bold text-gray-900 mb-1">Recent Exits</h2>
+      <p class="text-sm text-gray-600">Showing up to 250 most recent exit events.</p>
+    </div>
+
+    <div class="overflow-x-auto -mx-6 px-6">
+      <table class="w-full min-w-[860px]">
+        <thead>
+          <tr class="border-b border-gray-200">
+            <th class="text-left py-4 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wide">User</th>
+            <th class="text-left py-4 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wide">Email</th>
+            <th class="text-left py-4 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wide">Time</th>
+            <th class="text-left py-4 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wide">Source</th>
+            <th class="text-left py-4 px-4 text-xs font-semibold text-gray-600 uppercase tracking-wide">Gate</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-100">
+          {% for e in events %}
+            <tr class="hover:bg-gray-50/70 transition-colors" style="transition-duration: 200ms;">
+              <td class="py-4 px-4 text-sm font-semibold text-gray-900">{{ e.user.username }}</td>
+              <td class="py-4 px-4 text-sm text-gray-600">{{ e.user.email|default:"—" }}</td>
+              <td class="py-4 px-4 text-sm text-gray-700">
+                {{ e.event_time|date:"g:i A" }}
+                <div class="text-xs text-gray-500">{{ e.event_time|date:"M d, Y" }}</div>
+              </td>
+              <td class="py-4 px-4 text-sm text-gray-600">{{ e.source }}</td>
+              <td class="py-4 px-4 text-sm text-gray-600">{{ e.gate|default:"—" }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="5" class="py-12 px-4 text-center text-sm text-gray-500">No exits recorded today.</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="flex items-center justify-between">
+    <a href="{% url 'admin_dashboard' %}" class="sl-btn sl-btn--outline">
+      <i data-lucide="arrow-left" class="w-4 h-4"></i>
+      Back to Dashboard
+    </a>
+    <a href="{% url 'daily_report' %}" class="sl-btn sl-btn--primary">
+      Open Analytics
+      <i data-lucide="arrow-right" class="w-4 h-4"></i>
+    </a>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() { lucide.createIcons(); });
+  </script>
+{% endblock %}
+
